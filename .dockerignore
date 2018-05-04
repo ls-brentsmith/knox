@@ -1,0 +1,7 @@
+*.gem
+examples/
+.git
+.github
+README.md
+CHANGELOG.md
+.*

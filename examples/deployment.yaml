@@ -1,0 +1,82 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-json
+data:
+  config.json: |
+    [
+      {
+        "type": ".env",
+        "vault_secret_path": "secret/foo/.env",
+        "output": "/output/.env"
+      },
+      {
+        "type": "file",
+        "vault_secret_path": "secret/foo/jwt",
+        "key": "Key",
+        "output": "/output/jwt"
+      },
+      {
+        "type": "decode_base64",
+        "vault_secret_path": "secret/foo/certificate.pem",
+        "key": "Key",
+        "output": "/output/certificate.pem"
+      }
+    ]
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: knox-example
+  labels:
+    app: knox-example
+    release: knox-example
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: knox-example
+        release: knox-example
+    spec:
+      volumes:
+      - name: config-json
+        configMap:
+          name: config-json
+      - name: output
+        emptyDir:
+      initContainers:
+        - name: knox
+          image: "gcr.io/ls-docker/shared/knox:latest"
+          env:
+          - name: VAULT_ADDR
+            value: "https://vault.lightspeedappstg.com"
+          - name: ROLE
+            value: "foo"
+          volumeMounts:
+            - mountPath: /knox/config.json
+              name: config-json
+              subPath: config.json
+              readOnly: true
+            - mountPath: /output/
+              name: output
+      containers:
+        - name: bash
+          image: "bash"
+          imagePullPolicy: Always
+          command: ['bash', '-c', 'watch -n 6000 "ls -la /tmp/ && cat /tmp/certificate.pem && cat /tmp/jwt && cat /tmp/.env"']
+          volumeMounts:
+            - mountPath: /tmp/certificate.pem
+              subPath: certificate.pem
+              name: output
+              readOnly: true
+            - mountPath: /tmp/jwt
+              subPath: jwt
+              name: output
+              readOnly: true
+            - mountPath: /tmp/.env
+              subPath: .env
+              name: output
+              readOnly: true

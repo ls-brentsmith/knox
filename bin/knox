@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+require_relative '../lib/knox.rb'
+
+def run
+  Vault.auth.kubernetes(ENV['ROLE'])
+  config.each do |metadata|
+    validate_type!(metadata['type'])
+    metadata['data'] = read_secret(metadata)
+
+    case metadata['type']
+    when '.env'
+      to_env_file(metadata)
+    when 'file'
+      to_file(metadata)
+    when 'decode_base64'
+      to_decode_base64(metadata)
+    end
+  end
+end
+
+run

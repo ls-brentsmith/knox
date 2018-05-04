@@ -1,4 +1,6 @@
+#!/usr/bin/env ruby
 require 'vault'
+require 'base64'
 TYPES = %w(file .env decode_base64).freeze
 module Vault
   class Authenticate < Request
@@ -68,22 +70,3 @@ def read_secret(metadata)
 
   data
 end
-
-def run
-  Vault.auth.kubernetes(ENV['ROLE'])
-  config.each do |metadata|
-    validate_type!(metadata['type'])
-    metadata['data'] = read_secret(metadata)
-
-    case metadata['type']
-    when '.env'
-      to_env_file(metadata)
-    when 'file'
-      to_file(metadata)
-    when 'decode_base64'
-      to_decode_base64(metadata)
-    end
-  end
-end
-
-run
