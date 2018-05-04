@@ -1,0 +1,15 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    json (2.1.0)
+    vault (0.9.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  json
+  vault (~> 0.1)
+
+BUNDLED WITH
+   1.16.0
