@@ -8,20 +8,26 @@ data:
     [
       {
         "type": ".env",
-        "vault_secret_path": "secret/foo/.env",
+        "secret": "secret/foo/.env",
         "output": "/output/.env"
       },
       {
         "type": "file",
-        "vault_secret_path": "secret/foo/jwt",
-        "key": "Key",
-        "output": "/output/jwt"
+        "secret": "secret/foo/jwts",
+        "key": "example",
+        "output": "/output/example"
+      },
+      {
+        "type": "file",
+        "secret": "secret/foo/certificates",
+        "key": "example_plaintext_cert",
+        "output": "/output/example_plaintext_cert.pem"
       },
       {
         "type": "decode_base64",
-        "vault_secret_path": "secret/foo/certificate.pem",
-        "key": "Key",
-        "output": "/output/certificate.pem"
+        "secret": "secret/foo/certificates",
+        "key": "example_base64_cert",
+        "output": "/output/example_base64_cert.pem"
       }
     ]
 ---
@@ -66,14 +72,17 @@ spec:
         - name: bash
           image: "bash"
           imagePullPolicy: Always
-          command: ['bash', '-c', 'watch -n 6000 "ls -la /tmp/ && cat /tmp/certificate.pem && cat /tmp/jwt && cat /tmp/.env"']
+          command:
+            - bash
+            - -c
+            - watch -n 600 "find /tmp/ -type f | xargs tail"
           volumeMounts:
-            - mountPath: /tmp/certificate.pem
-              subPath: certificate.pem
+            - mountPath: /tmp/example_plaintext_cert.pem
+              subPath: example_plaintext_cert.pem
               name: output
               readOnly: true
-            - mountPath: /tmp/jwt
-              subPath: jwt
+            - mountPath: /tmp/example_base64_cert.pem
+              subPath: example_base64_cert.pem
               name: output
               readOnly: true
             - mountPath: /tmp/.env
