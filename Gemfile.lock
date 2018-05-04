@@ -1,0 +1,21 @@
+PATH
+  remote: .
+  specs:
+    knox (0.0.1)
+      json (= 2.1.0)
+      vault (= 0.9.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    json (2.1.0)
+    vault (0.9.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  knox!
+
+BUNDLED WITH
+   1.16.0

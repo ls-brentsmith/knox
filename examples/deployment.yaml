@@ -1,0 +1,91 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-json
+data:
+  config.json: |
+    [
+      {
+        "type": ".env",
+        "secret": "secret/foo/.env",
+        "output": "/output/.env"
+      },
+      {
+        "type": "file",
+        "secret": "secret/foo/jwts",
+        "key": "example",
+        "output": "/output/example"
+      },
+      {
+        "type": "file",
+        "secret": "secret/foo/certificates",
+        "key": "example_plaintext_cert",
+        "output": "/output/example_plaintext_cert.pem"
+      },
+      {
+        "type": "decode_base64",
+        "secret": "secret/foo/certificates",
+        "key": "example_base64_cert",
+        "output": "/output/example_base64_cert.pem"
+      }
+    ]
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: knox-example
+  labels:
+    app: knox-example
+    release: knox-example
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: knox-example
+        release: knox-example
+    spec:
+      volumes:
+      - name: config-json
+        configMap:
+          name: config-json
+      - name: output
+        emptyDir:
+      initContainers:
+        - name: knox
+          image: "changeme"
+          env:
+          - name: VAULT_ADDR
+            value: "changeme"
+          - name: ROLE
+            value: "foo"
+          volumeMounts:
+            - mountPath: /knox/config.json
+              name: config-json
+              subPath: config.json
+              readOnly: true
+            - mountPath: /output/
+              name: output
+      containers:
+        - name: bash
+          image: "bash"
+          imagePullPolicy: Always
+          command:
+            - bash
+            - -c
+            - watch -n 600 "find /tmp/ -type f | xargs tail"
+          volumeMounts:
+            - mountPath: /tmp/example_plaintext_cert.pem
+              subPath: example_plaintext_cert.pem
+              name: output
+              readOnly: true
+            - mountPath: /tmp/example_base64_cert.pem
+              subPath: example_base64_cert.pem
+              name: output
+              readOnly: true
+            - mountPath: /tmp/.env
+              subPath: .env
+              name: output
+              readOnly: true
