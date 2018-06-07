@@ -2,7 +2,12 @@
 require_relative '../lib/knox.rb'
 
 def run
-  Vault.auth.kubernetes(ENV['ROLE'])
+  Vault.auth.kubernetes(
+    ENV['AUTH_ROLE'],
+    ENV['AUTH_PATH'],
+    ENV['TOKEN_PATH']
+  )
+
   config.each do |metadata|
     validate_type!(metadata['type'])
     metadata['data'] = read_secret(metadata)

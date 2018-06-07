@@ -4,18 +4,20 @@ require 'base64'
 TYPES = %w(file .env decode_base64).freeze
 module Vault
   class Authenticate < Request
-    def kubernetes(role, service_account_location = nil, route = nil)
-      route ||= '/v1/auth/kubernetes/login'
-      service_account_location ||=
-        '/var/run/secrets/kubernetes.io/serviceaccount/token'
+    def kubernetes(role, auth_path = nil,  token_path = nil)
+      raise "Role cannot be nil" unless role
+      auth_path ||= 'kubernetes'
+      token_path ||= '/var/run/secrets/kubernetes.io/serviceaccount/token'
+
+      path ||= File.join('/v1/auth', auth_path, 'login')
 
       payload = {
         role: role,
-        jwt: File.read(service_account_location)
+        jwt: File.read(token_path)
       }
 
       json = client.post(
-        route,
+        path,
         JSON.fast_generate(payload)
       )
 

@@ -59,7 +59,7 @@ spec:
           env:
           - name: VAULT_ADDR
             value: "changeme"
-          - name: ROLE
+          - name: AUTH_ROLE
             value: "foo"
           volumeMounts:
             - mountPath: /knox/config.json
